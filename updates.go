@@ -113,7 +113,7 @@ func GetUpdates(updatesChan UpdatesChannel, stopChan <-chan struct{}, db *sql.DB
 
 				usersString := "Users with most karma points of " + chat + "\n"
 				for i, user := range users {
-					usersString += fmt.Sprintf("%d. %s has %d of karma.\n", i+1, *user.FirstName+" "+*user.LastName, user.Count)
+					usersString += fmt.Sprintf("%d. %s has %d of karma.\n", i+1, getName(user), user.Count)
 				}
 
 				if err := sendMessage(botUrl, update.Message.Chat.ID, usersString); err != nil {
@@ -129,7 +129,7 @@ func GetUpdates(updatesChan UpdatesChannel, stopChan <-chan struct{}, db *sql.DB
 
 				usersString := "Most hated users of " + chat + "\n"
 				for i, user := range users {
-					usersString += fmt.Sprintf("%d. %s has %d of karma.\n", i+1, *user.FirstName+" "+*user.LastName, user.Count)
+					usersString += fmt.Sprintf("%d. %s has %d of karma.\n", i+1, getName(user), user.Count)
 				}
 
 				if err := sendMessage(botUrl, update.Message.Chat.ID, usersString); err != nil {
@@ -191,5 +191,15 @@ func GetUpdates(updatesChan UpdatesChannel, stopChan <-chan struct{}, db *sql.DB
 			log.Println(err)
 			return
 		}
+	}
+}
+
+func getName(user *model.Karma) string {
+	if user.FirstName != nil && user.LastName != nil {
+		return *user.FirstName + " " + *user.LastName
+	} else if user.FirstName != nil && user.LastName == nil {
+		return *user.FirstName
+	} else {
+		return "Fulanito"
 	}
 }
