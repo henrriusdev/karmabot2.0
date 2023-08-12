@@ -1,5 +1,7 @@
 package main
 
+import "strings"
+
 type Updates struct {
 	Ok     bool     `json:"ok"`
 	Result []Result `json:"result"`
@@ -29,6 +31,18 @@ type Chat struct {
 	Title    string `json:"title"`
 	Type     string `json:"type"`
 	Username string `json:"username"`
+}
+
+func (c *Chat) IsPrivate() bool {
+	return c.Type == "private"
+}
+
+func (c *Chat) IsGroup() bool {
+	return c.Type == "group" || c.Type == "supergroup"
+}
+
+func (c *Chat) IsChannel() bool {
+	return c.Type == "channel"
 }
 
 type From struct {
@@ -72,6 +86,30 @@ type Message struct {
 	Text               string                `json:"text"`
 }
 
+func (m *Message) IsCommand() bool {
+	entity := (m.Entities)[0]
+	return entity.Offset == 0 && entity.IsCommand()
+}
+
+func (m *Message) Command() string {
+	command := m.CommandWithAt()
+
+	if i := strings.Index(command, "@"); i != -1 {
+		command = command[:i]
+	}
+
+	return command
+}
+
+func (m *Message) CommandWithAt() string {
+	if !m.IsCommand() {
+		return ""
+	}
+
+	entity := (m.Entities)[0]
+	return m.Text[1:entity.Length]
+}
+
 type Animation struct {
 	Duration     int64  `json:"duration"`
 	FileID       string `json:"file_id"`
@@ -97,6 +135,10 @@ type Entity struct {
 	Length int64  `json:"length"`
 	Offset int64  `json:"offset"`
 	Type   string `json:"type"`
+}
+
+func (e *Entity) IsCommand() bool {
+	return e.Type == "bot_command"
 }
 
 type Document struct {
