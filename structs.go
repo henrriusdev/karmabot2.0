@@ -2,27 +2,29 @@ package main
 
 import "strings"
 
-type Updates struct {
-	Ok     bool     `json:"ok"`
-	Result []Result `json:"result"`
+type UpdatesChannel <-chan Updates
+
+type Root struct {
+	Ok      bool      `json:"ok"`
+	Updates []Updates `json:"result"`
 }
 
-type Result struct {
-	EditedMessage EditedMessage `json:"edited_message"`
-	Message       Message       `json:"message"`
-	UpdateID      int64         `json:"update_id"`
+type Updates struct {
+	EditedMessage *EditedMessage `json:"edited_message"`
+	Message       *Message       `json:"message"`
+	UpdateID      int64          `json:"update_id"`
 }
 
 type EditedMessage struct {
-	Chat            Chat                        `json:"chat"`
-	Date            int64                       `json:"date"`
-	EditDate        int64                       `json:"edit_date"`
-	From            From                        `json:"from"`
-	IsTopicMessage  bool                        `json:"is_topic_message"`
-	MessageID       int64                       `json:"message_id"`
-	MessageThreadID *int64                      `json:"message_thread_id"`
-	ReplyToMessage  EditedMessageReplyToMessage `json:"reply_to_message"`
-	Text            string                      `json:"text"`
+	Chat            *Chat                 `json:"chat"`
+	Date            int64                 `json:"date"`
+	EditDate        int64                 `json:"edit_date"`
+	From            *From                 `json:"from"`
+	IsTopicMessage  bool                  `json:"is_topic_message"`
+	MessageID       int64                 `json:"message_id"`
+	MessageThreadID *int64                `json:"message_thread_id"`
+	ReplyToMessage  *EditedReplyToMessage `json:"reply_to_message"`
+	Text            string                `json:"text"`
 }
 
 type Chat struct {
@@ -54,11 +56,11 @@ type From struct {
 	Username     string `json:"username"`
 }
 
-type EditedMessageReplyToMessage struct {
-	Chat            Chat   `json:"chat"`
+type EditedReplyToMessage struct {
+	Chat            *Chat  `json:"chat"`
 	Date            int64  `json:"date"`
 	EditDate        int64  `json:"edit_date"`
-	From            From   `json:"from"`
+	From            *From  `json:"from"`
 	IsTopicMessage  bool   `json:"is_topic_message"`
 	MessageID       int64  `json:"message_id"`
 	MessageThreadID int64  `json:"message_thread_id"`
@@ -66,29 +68,32 @@ type EditedMessageReplyToMessage struct {
 }
 
 type Message struct {
-	Animation          Animation             `json:"animation"`
-	Caption            string                `json:"caption"`
-	CaptionEntities    []Entity              `json:"caption_entities"`
-	Chat               Chat                  `json:"chat"`
-	Date               int64                 `json:"date"`
-	Document           Document              `json:"document"`
-	Entities           []Entity              `json:"entities"`
-	From               From                  `json:"from"`
-	IsTopicMessage     bool                  `json:"is_topic_message"`
-	MessageID          int64                 `json:"message_id"`
-	MessageThreadID    *int64                `json:"message_thread_id"`
-	NewChatMember      From                  `json:"new_chat_member"`
-	NewChatMembers     []From                `json:"new_chat_members"`
-	NewChatParticipant From                  `json:"new_chat_participant"`
-	Photo              []Thumb               `json:"photo"`
-	ReplyToMessage     MessageReplyToMessage `json:"reply_to_message"`
-	Sticker            Sticker               `json:"sticker"`
-	Text               string                `json:"text"`
+	Animation          *Animation      `json:"animation"`
+	Caption            string          `json:"caption"`
+	CaptionEntities    []Entity        `json:"caption_entities"`
+	Chat               *Chat           `json:"chat"`
+	Date               int64           `json:"date"`
+	Document           *Document       `json:"document"`
+	Entities           []Entity        `json:"entities"`
+	From               *From           `json:"from"`
+	IsTopicMessage     bool            `json:"is_topic_message"`
+	MessageID          int64           `json:"message_id"`
+	MessageThreadID    *int64          `json:"message_thread_id"`
+	NewChatMember      *From           `json:"new_chat_member"`
+	NewChatMembers     []From          `json:"new_chat_members"`
+	NewChatParticipant *From           `json:"new_chat_participant"`
+	Photo              []Thumb         `json:"photo"`
+	ReplyToMessage     *ReplyToMessage `json:"reply_to_message"`
+	Sticker            *Sticker        `json:"sticker"`
+	Text               string          `json:"text"`
 }
 
 func (m *Message) IsCommand() bool {
-	entity := (m.Entities)[0]
-	return entity.Offset == 0 && entity.IsCommand()
+	if len(m.Entities) > 0 {
+		entity := m.Entities[0]
+		return entity.Offset == 0 && entity.IsCommand()
+	}
+	return false
 }
 
 func (m *Message) Command() string {
@@ -151,14 +156,14 @@ type Document struct {
 	Thumbnail    Thumb  `json:"thumbnail"`
 }
 
-type MessageReplyToMessage struct {
+type ReplyToMessage struct {
 	Caption           string            `json:"caption"`
 	CaptionEntities   []Entity          `json:"caption_entities"`
-	Chat              Chat              `json:"chat"`
+	Chat              *Chat             `json:"chat"`
 	Date              int64             `json:"date"`
 	EditDate          *int64            `json:"edit_date"`
 	ForumTopicCreated ForumTopicCreated `json:"forum_topic_created"`
-	From              From              `json:"from"`
+	From              *From             `json:"from"`
 	IsTopicMessage    bool              `json:"is_topic_message"`
 	MessageID         int64             `json:"message_id"`
 	MessageThreadID   *int64            `json:"message_thread_id"`
