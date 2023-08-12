@@ -12,8 +12,8 @@ import (
 
 type Karma struct {
 	User        int64
-	FirstName   string
-	LastName    string
+	FirstName   *string
+	LastName    *string
 	Count       int
 	LastUpdated time.Time
 }
