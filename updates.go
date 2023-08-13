@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -50,9 +49,6 @@ func GetUpdatesChan(offset int64, stopChan <-chan struct{}) (UpdatesChannel, err
 }
 
 func GetUpdates(updatesChan UpdatesChannel, stopChan <-chan struct{}, db *sql.DB) {
-	plusOneRegex := regexp.MustCompile(`(https:\/\/\S*)?\+1\b`)
-	minusOneRegex := regexp.MustCompile(`(https:\/\/\S*)?\-1\b`)
-
 	botUrl := os.Getenv("TELEGRAM_BOT_URL")
 	karmas := model.KarmaModel{DB: db}
 
@@ -143,8 +139,8 @@ func GetUpdates(updatesChan UpdatesChannel, stopChan <-chan struct{}, db *sql.DB
 
 		canModify := karmas.CanModify(update.Message.From.ID, update.Message.From.FirstName, update.Message.From.LastName, chat)
 		fmt.Println(canModify)
-		// For +1 or -1
-		if plusOneRegex.MatchString(update.Message.Text) || minusOneRegex.MatchString(update.Message.Text) {
+
+		if containsPlusOne(update.Message.Text) || containsMinusOne(update.Message.Text) {
 			if update.Message.ReplyToMessage == nil {
 				continue
 			}
@@ -163,14 +159,14 @@ func GetUpdates(updatesChan UpdatesChannel, stopChan <-chan struct{}, db *sql.DB
 					return
 				}
 				continue
-			} else if plusOneRegex.MatchString(update.Message.Text) {
+			} else if containsPlusOne(update.Message.Text) {
 				err = karmas.AddKarma(update.Message.From.ID, update.Message.ReplyToMessage.From.ID, update.Message.ReplyToMessage.From.FirstName, update.Message.ReplyToMessage.From.LastName, chat)
 				if err != nil {
 					log.Println(err)
 					continue
 				}
 
-			} else if minusOneRegex.MatchString(update.Message.Text) {
+			} else if containsMinusOne(update.Message.Text) {
 				err = karmas.SubstractKarma(update.Message.From.ID, update.Message.ReplyToMessage.From.ID, update.Message.ReplyToMessage.From.FirstName, update.Message.ReplyToMessage.From.LastName, chat)
 				if err != nil {
 					log.Println(err)
@@ -203,4 +199,46 @@ func getName(user *model.Karma) string {
 	} else {
 		return "Fulanito"
 	}
+}
+
+func containsPlusOne(s string) bool {
+	// Separar el texto en palabras
+	words := strings.Fields(s)
+
+	for i := 0; i < len(words); i++ {
+		word := words[i]
+
+		// Verificar si la palabra es "+1"
+		if word == "+1" {
+			// Verificar si la palabra anterior o siguiente es un enlace
+			if i > 0 && !strings.HasPrefix(words[i-1], "http://") && !strings.HasPrefix(words[i-1], "https://") ||
+				i < len(words)-1 && !strings.HasPrefix(words[i+1], "http://") && !strings.HasPrefix(words[i+1], "https://") {
+				return true
+			}
+			return false
+		}
+	}
+
+	return false
+}
+
+func containsMinusOne(s string) bool {
+	// Separar el texto en palabras
+	words := strings.Fields(s)
+
+	for i := 0; i < len(words); i++ {
+		word := words[i]
+
+		// Verificar si la palabra es "-1"
+		if word == "-1" {
+			// Verificar si la palabra anterior o siguiente es un enlace
+			if i > 0 && !strings.HasPrefix(words[i-1], "http://") && !strings.HasPrefix(words[i-1], "https://") ||
+				i < len(words)-1 && !strings.HasPrefix(words[i+1], "http://") && !strings.HasPrefix(words[i+1], "https://") {
+				return true
+			}
+			return false
+		}
+	}
+
+	return false
 }
