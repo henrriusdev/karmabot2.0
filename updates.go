@@ -205,6 +205,10 @@ func containsPlusOne(s string) bool {
 	// Separar el texto en palabras
 	words := strings.Fields(s)
 
+	if len(words) == 1 && words[0] == "+1" {
+		return true
+	}
+
 	for i := 0; i < len(words); i++ {
 		word := words[i]
 
@@ -225,6 +229,10 @@ func containsPlusOne(s string) bool {
 func containsMinusOne(s string) bool {
 	// Separar el texto en palabras
 	words := strings.Fields(s)
+
+	if len(words) == 1 && words[0] == "-1" {
+		return true
+	}
 
 	for i := 0; i < len(words); i++ {
 		word := words[i]
