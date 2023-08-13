@@ -50,8 +50,9 @@ func GetUpdatesChan(offset int64, stopChan <-chan struct{}) (UpdatesChannel, err
 }
 
 func GetUpdates(updatesChan UpdatesChannel, stopChan <-chan struct{}, db *sql.DB) {
-	plusOneRegex := regexp.MustCompile(`\+1\b`)
-	minusOneRegex := regexp.MustCompile(`\-1\b`)
+	plusOneRegex := regexp.MustCompile(`(https:\/\/\S*)?\+1\b`)
+	minusOneRegex := regexp.MustCompile(`(https:\/\/\S*)?\-1\b`)
+
 	botUrl := os.Getenv("TELEGRAM_BOT_URL")
 	karmas := model.KarmaModel{DB: db}
 
